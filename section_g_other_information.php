@@ -79,15 +79,21 @@
 
 
     <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
-        <div class="text-2xl md:text-3xl text-green-800 font-semibold border-b py-2 border-gray-300">
-            Conference Registration
-        </div>
-        <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center">
-            <div class="text-lg md:text-xl text-black-500 font-semibold py-0 mt-6 border-gray-300">
-                Participant Identification
+        <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center border-b">
+            <div>
+                <div class="text-xl md:text-xl text-green-800 py-0 font-semibold border-gray-300">
+                    Job Application Form
+                </div>
+                <div class="text-md md:text-md text-black-500 font-semibold border-gray-300">
+                    OTHER INFORMATION
+                </div>               
             </div>
-            <div>Section 1 of 6</div>
+            <div>Section 5 of 6</div>
         </div>
+
+        
+
+       
         
         <form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST" class="md:px-10 py-5">
 
@@ -99,22 +105,28 @@
                     }
                    
             ?>
+            
+            
+            
+                       
 
-
-            <div class="py-3">
-                <label class='text-gray-500 font-medium text-sm'>Email <sup class='text-red-600'>*</sup></label>
-                <div class="py-1">
-                        <input type="text" name="email" required  class="border py-3 rounded-md px-3 text-lg shadow-md" style="width:100%;" />
+            <!-- Description of duties //-->
+            <div class="flex flex-col md:flex-row w-full gap-x-4 mt-5">
+                <div class="py-3 md:w-full">
+                    <label class='text-gray-800 font-medium text-sm'>What activities outside work interest you? (State any positions held you consider relevant.): <sup class='text-red-600'></sup></label>
+                    <div class="py-1">
+                            <textarea name="duties_description" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                    </div>
                 </div>
-            </div>
 
-            <div class="py-3">
-                <label class='text-gray-500 font-medium text-sm'>Confirm Email <sup class='text-red-600'>*</sup></label>
-                <div class='py-1'>
-                        <input type="text" name="confirm_email" required class="border py-3 rounded-md px-3 text-lg shadow-md" style="width:100%;" />
-                </div>
+                
             </div>
+            <!-- End of Description of duties //-->           
 
+
+
+            
 
             <div class="py-3">
                 

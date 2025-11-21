@@ -13,6 +13,7 @@ class User
     /// class properties
     public $user_id;
     public $email;
+    public $pin;
     
 
     public function __construct($db)
@@ -26,13 +27,14 @@ class User
     {
         try
         {
-            $query = "Select * from ".$this->table_name." where email=:email";
+            $query = "Select * from ".$this->table_name." where email=:email and pin=:pin";
 
             $stmt = $this->conn->prepare($query);
 
             $this->email = htmlspecialchars(strip_tags($this->email));
 
             $stmt->bindParam(":email", $this->email);
+            $stmt->bindParam(":pin", $this->pin);
 
             $stmt->execute();
 
@@ -57,16 +59,18 @@ class User
         {
                                      
                 $query = "Insert into ".$this->table_name." set 
-                            email=:email";
+                            email=:email, pin=:pin";
                 
                 $stmt = $this->conn->prepare($query);
 
                 // posted values
                 $this->email = htmlspecialchars(strip_tags($this->email));
+                $this->pin = htmlspecialchars(strip_tags($this->pin));
                 
 
 
                 $stmt->bindParam(":email", $this->email);
+                $stmt->bindParam(":pin", $this->pin);
                 
 
                 if ($stmt->execute())

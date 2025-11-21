@@ -4,7 +4,7 @@ class Database
 {
      // specify db
      private $host = "localhost";
-     private $db_name = "csa2025";
+     private $db_name = "moor_coast";
      private $username = "root";
      private $password = "";
      public $conn;
