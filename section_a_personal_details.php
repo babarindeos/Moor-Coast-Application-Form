@@ -140,8 +140,7 @@
                             {
                                 echo "<div class='my-4 py-6 px-4 border border-green-200 bg-green-50 rounded-md'>{$error_msg}</div>";
                             }
-                    }
-                           
+                    }                          
                    
             ?>
             
