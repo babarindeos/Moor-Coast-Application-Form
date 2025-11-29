@@ -1,9 +1,13 @@
 <?php
   session_start();
 
-  if (!isset($_SESSION['login']) || $_SESSION['login'] != 'moor_coast_app')
+  if (!isset($_GET['q']) && $_GET['q'] !='')
   {
-     header("Location: index.php");
+        if ($_GET['u'] != $_SESSION['user_id'])
+        {
+            header("location:section_d_previous_employment.php");
+        }
+
   }
 
   include_once('config/database.php');
@@ -34,6 +38,7 @@
        
 
         $previous_employment = new PreviousEmployment($db);
+        $previous_employment->id = $_GET['q'];
         $previous_employment->user_id = $user_id;
         $previous_employment->employer = $employer;
         $previous_employment->post = $post;
@@ -44,19 +49,9 @@
         $previous_employment->duties = $duties;
 
 
-        $create = $previous_employment->create();
+        $create = $previous_employment->update();
 
-        if ($create['status'] == 'success')
-        {
-                $status = "success";
-                $error_msg = "The Previous Employment has been successfully saved.";
-
-        }
-        else
-        {
-                $status = "fail";
-                $error_msg = "An error occurred saving the Previous Employment";
-        }
+        header("location:section_d_previous_employment.php");
         
   }
 
@@ -73,10 +68,14 @@
         require_once('menu.inc.php');
 
 
+        $previous_employment = new PreviousEmployment($db);
+        $previous_employment->user_id = $_SESSION['user_id'];
+        $previous_employment = $previous_employment->edit($_SESSION['user_id'], $_GET['q']);
+        $previous_employment = $previous_employment->fetch(PDO::FETCH_ASSOC);
+
         $previous_employments = new PreviousEmployment($db);
         $previous_employments->user_id = $_SESSION['user_id'];
         $previous_employments = $previous_employments->exists();
-       
     ?>
 
 
@@ -126,7 +125,7 @@
                     <label class='text-gray-800 font-medium text-sm'>Name and Address of Employers: <sup class='text-red-600'></sup></label>
                     <div class="py-1">
                             <textarea name="employer" required  class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"></textarea>
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"><?php echo $previous_employment['employer']; ?></textarea>
                     </div>
                 </div>
 
@@ -134,7 +133,8 @@
                     <label class='text-gray-800 font-medium text-sm'>Post held: <sup class='text-red-600'></sup></label>
                     <div class='py-1'>
                             <input type="text" name="post" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" 
+                                                                                value="<?php echo $previous_employment['post'];  ?>" />
                     </div>
                 </div>
 
@@ -142,7 +142,8 @@
                     <label class='text-gray-800 font-medium text-sm'>From: <sup class='text-red-600'></sup></label>
                     <div class='py-1'>
                             <input type="text" name="from_date" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php echo $previous_employment['from_date'];  ?>" />
                     </div>
                 </div>
 
@@ -151,7 +152,8 @@
                     <label class='text-gray-800 font-medium text-sm'>To: <sup class='text-red-600'></sup></label>
                     <div class='py-1'>
                             <input type="text" name="to_date" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php echo $previous_employment['to_date'];  ?>" />
                     </div>
                 </div>
             </div>
@@ -165,7 +167,8 @@
                     <label class='text-gray-800 font-medium text-sm'>Reason for Leaving: <sup class='text-red-600'></sup></label>
                     <div class="py-1">
                             <input type="text" name="leaving_reason" required  class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" 
+                                                                         value="<?php echo $previous_employment['leaving_reason'];  ?>" />
                     </div>
                 </div>
 
@@ -173,7 +176,8 @@
                     <label class='text-gray-800 font-medium text-sm'>Final grade: <sup class='text-red-600'></sup></label>
                     <div class='py-1'>
                             <input type="text" name="final_grade"  class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" 
+                                                                                value="<?php echo $previous_employment['final_grade'];  ?>" />
                     </div>
                 </div>
             </div>
@@ -188,7 +192,8 @@
                     <label class='text-gray-800 font-medium text-sm'>Description of duties: <sup class='text-red-600'></sup></label>
                     <div class="py-1">
                             <textarea name="duties" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;"
+                                                                          ><?php echo $previous_employment['duties'];  ?></textarea>
                     </div>
                 </div>
 
@@ -206,7 +211,7 @@
                         <button type="submit" class="border py-4 rounded-md bg-gray-600 text-white 
                                                      font-semibold hover:bg-green-600 cursor-pointer" 
                                 style="width:100%;" >
-                                Submit
+                                Update 
                         </button>
                 </div>
             </div>

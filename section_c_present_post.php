@@ -128,13 +128,19 @@
                     PRESENT POST
                 </div>
             </div>
-            <div class="flex flex-col md:flex-col gap-2">
+            <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
                 <div>Section 3 of 6</div>
                 <div>
-                    <a href='section_b_educational_professional_qualifications.php' class='py-1 rounded-l px-5 bg-blue-500 text-white text-sm'>Previous</a>
-                    <a href='section_d_previous_employment.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm'>Next</a>
+                    <a href='section_b_educational_professional_qualifications.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
+                                                                    text-sm border border-blue-500 hover:bg-blue-400 
+                                                                    hover:border-blue-400
+                                                                    hover:text-white'>Previous</a>
+                    <a href='section_d_previous_employment.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm 
+                                                                    border border-blue-500 hover:border-blue-400 hover:bg-blue-400'>Next</a>
                 </div>
             </div>
+
+            
         </div>
 
         
@@ -145,18 +151,7 @@
 
 
             <?php
-                    if ($_SERVER['REQUEST_METHOD'] === 'POST')
-                    {
-                         if ($status == 'fail')
-                         {
-                                echo "<div class='my-4 py-6 px-4 border border-red-200 bg-red-50 rounded-md'>{$error_msg}</div>";
-                         }
-                         else 
-                         {
-                                echo "<div class='my-4 py-6 px-4 border border-green-200 bg-green-50 rounded-md'>{$error_msg}</div>";
-                         }
-                    }                          
-                   
+                    include_once('alert_message.inc.php');
             ?>
             
             

@@ -1,67 +1,80 @@
 <?php
   session_start();
-  session_destroy();
+  
+
+  include_once('config/database.php');
+  include_once('classes/User.php');
+  include_once('classes/Education.php');
+  include_once('classes/Profession.php');
+  include_once('classes/TrainingCourse.php');
+  include_once('classes/PresentPost.php');
+  include_once('classes/PreviousEmployment.php');
+  include_once('classes/DrivingLicense.php');
 
   $status = "";
   $error_msg = "";
 
+  $database = new Database();
+  $db = $database->getConnection();
+
+
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $confirm_email = htmlspecialchars(strip_tags($_POST['confirm_email']));
+        $current_license = htmlspecialchars(strip_tags($_POST['current_license']));
+        $car_access = htmlspecialchars(strip_tags($_POST['car_access']));
+        $own_car = htmlspecialchars(strip_tags($_POST['own_car']));
+        $insurance_policy = htmlspecialchars(strip_tags($_POST['insurance_policy']));
+        $penaly_points = htmlspecialchars(strip_tags($_POST['penalty_points']));
+        $driving_penalty = htmlspecialchars(strip_tags($_POST['driving_penalty']));
+        $duties = htmlspecialchars(strip_tags($_POST['duties']));
 
-       
 
-        if ($email != $confirm_email)
+        $driving_license = new DrivingLicense($db);
+
+        
+        $driving_license->user_id = $_SESSION['user_id'];
+
+        $driving_license->current_license = $current_license;
+        $driving_license->car_access = $car_access;
+        $driving_license->own_car = $own_car;
+        $driving_license->insurance_policy = $insurance_policy;
+        $driving_license->penalty_points = $penaly_points;
+        $driving_license->driving_penalty = $driving_penalty;
+        $driving_license->duties = $duties;
+
+
+        $record_exist = $driving_license->exists();
+        
+        if ($record_exist->rowCount() > 0)
         {
-            $status = "fail";
-            $error_msg = "The email addresses do not match.";
+               $created = $driving_license->create($db);
+
         }
         else
         {
-            include_once('config/database.php');
-            include_once('classes/User.php');
+             $create =  $driving_license->create($db);   
+             
+            if ($create['status']=="success")
+                {
 
-            $database = new Database();
-            $db = $database->getConnection();
-
-            $user = new User($db);
-            $user->email = $email;
-            $user_exist = $user->user_exist();
-
-            //var_dump($user_exist);
-            //exit;
-
-            if ($user_exist == 0)
-            {
-                 $user_create = $user->create();
-                 if ($user_create['status']=="success")
-                 {
-
-                         $user_exist = $user->user_exist();
-                         session_start();
-                         $_SESSION['login'] = 'csa2025';
-                         $_SESSION['user_email'] = $user_exist['email'];
-                         $_SESSION['user_id'] = $user_exist['user_id'];
-
-                         header("Location:section_b_participation_category.php");
-                 }
-                 else
-                 {
-                        $status = "fail";
-                        $error_msg = "An error occurred registering the email";
-                 }
+                        $status = "success";
+                        $error_msg = "The record has been successfully saved";           
             }
             else
             {
-                 session_start();
-                 $_SESSION['login'] = 'csa2025';
-                 $_SESSION['user_email'] = $user_exist['email'];
-                 $_SESSION['user_id'] = $user_exist['user_id'];
-                 header("Location:section_b_participation_category.php");
+                         $status = "fail";
+                        $error_msg = "An error occurred saving the record";
+
             }
+
+             
+             
         }
+
+       
+
+       
   }
 
 
@@ -75,6 +88,13 @@
 <main class="bg-gray-100 min-h-screen ">
     <?php
         require_once('menu.inc.php');
+
+
+        $driving_license = new DrivingLicense($db);
+        $driving_license->user_id = $_SESSION['user_id'];
+        
+        $driving_license = $driving_license->exists();
+        $driving_license = $driving_license->fetch(PDO::FETCH_ASSOC);
     ?>
 
 
@@ -98,13 +118,9 @@
         <form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST" class="md:px-10 py-5">
 
 
-            <?php
-                    if ($status == 'fail')
-                    {
-                         echo "<div class='my-4 py-6 px-4 border border-red-200 bg-red-50 rounded-md'>{$error_msg}</div>";
-                    }
-                   
-            ?>
+             <?php
+                    include_once('alert_message.inc.php');
+             ?>
             
             
             <!-- Title of post applied for //-->           
@@ -123,10 +139,10 @@
                 <div class="py-3 md:w-1/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="1" <?php if ($driving_license['current_license'] == '1'){ echo 'checked'; } ?> name="current_license" required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="0" <?php if ($driving_license['current_license'] == '0'){ echo 'checked'; } ?> name="current_license" required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
 
                             
@@ -150,10 +166,10 @@
                 <div class="py-3 md:w-1/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="1" <?php if ($driving_license['car_access'] == '1'){ echo 'checked'; } ?> name="car_access" required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="0" name="car_access" <?php if ($driving_license['car_access'] == '0'){ echo 'checked'; } ?> required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
 
                             
@@ -177,10 +193,10 @@
                 <div class="py-3 md:w-1/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="1" name="own_car" <?php if ($driving_license['own_car'] == '1'){ echo 'checked'; } ?> required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="0" name="own_car" <?php if ($driving_license['own_car'] == '0'){ echo 'checked'; } ?> required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
 
                             
@@ -205,10 +221,10 @@
                 <div class="py-3 md:w-1/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="1" name="insurance_policy" <?php if ($driving_license['insurance_policy'] == '1'){ echo 'checked'; } ?> required  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="0" name="insurance_policy" required  <?php if ($driving_license['insurance_policy'] == '0'){ echo 'checked'; } ?>  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
 
                             
@@ -233,10 +249,10 @@
                 <div class="py-3 md:w-1/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="1" name="penalty_points" required <?php if ($driving_license['penalty_points'] == '1'){ echo 'checked'; } ?>  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="0" name="penalty_points" required <?php if ($driving_license['penalty_points'] == '0'){ echo 'checked'; } ?>  class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
 
                             
@@ -260,10 +276,10 @@
                 <div class="py-3 md:w-1/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="1" name="driving_penalty" required <?php if ($driving_license['driving_penalty'] == '1'){ echo 'checked'; } ?> class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
+                                <input type="radio" value="0" name="driving_penalty" required <?php if ($driving_license['driving_penalty'] == '0'){ echo 'checked'; } ?> class="border py-3 rounded-md px-3 text-lg
                                                                          focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
 
                             
@@ -281,8 +297,8 @@
                 <div class="py-3 md:w-full">
                     <label class='text-gray-800 font-medium text-sm'>Description of duties: <sup class='text-red-600'></sup></label>
                     <div class="py-1">
-                            <textarea name="duties_description" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                            <textarea name="duties" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php echo $driving_license['duties']; ?></textarea>
                     </div>
                 </div>
 
