@@ -1,67 +1,73 @@
 <?php
-  session_start();
-  session_destroy();
-
-  $status = "";
-  $error_msg = "";
-
+  include_once('page_config.inc.php');
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $confirm_email = htmlspecialchars(strip_tags($_POST['confirm_email']));
-
+        $work_hours = htmlspecialchars(strip_tags($_POST['work_hours']));
+        $impromptu_work = htmlspecialchars(strip_tags($_POST['impromptu_work']));
+        $start_date = htmlspecialchars(strip_tags($_POST['start_date']));
+        $employer_notice = htmlspecialchars(strip_tags($_POST['employer_notice']));
+        $other_work = htmlspecialchars(strip_tags($_POST['other_work']));
+        $future_holiday = htmlspecialchars(strip_tags($_POST['future_holiday']));
        
 
-        if ($email != $confirm_email)
+
+        $working_hour = new WorkingHour($db);
+
+        
+        $working_hour->user_id = $_SESSION['user_id'];
+
+        $working_hour->work_hours = $work_hours;
+        $working_hour->impromptu_work = $impromptu_work;
+        $working_hour->start_date = $start_date;
+        $working_hour->employer_notice = $employer_notice;
+        $working_hour->other_work = $other_work;
+        $working_hour->future_holiday = $future_holiday;
+        
+
+
+        $record_exist = $working_hour->exists();
+        
+        if ($record_exist->rowCount() > 0)
         {
-            $status = "fail";
-            $error_msg = "The email addresses do not match.";
+               $update = $working_hour->update($db);
+
+                if ($update['status']=="success")
+                {
+
+                        $status = "success";
+                        $error_msg = "The record has been successfully updated";           
+                }
+                else
+                {
+                            $status = "fail";
+                            $error_msg = "An error occurred updating the record";
+
+                }
+
+
         }
         else
         {
-            include_once('config/database.php');
-            include_once('classes/User.php');
+             $create =  $working_hour->create($db);   
+             
+            if ($create['status']=="success")
+                {
 
-            $database = new Database();
-            $db = $database->getConnection();
-
-            $user = new User($db);
-            $user->email = $email;
-            $user_exist = $user->user_exist();
-
-            //var_dump($user_exist);
-            //exit;
-
-            if ($user_exist == 0)
-            {
-                 $user_create = $user->create();
-                 if ($user_create['status']=="success")
-                 {
-
-                         $user_exist = $user->user_exist();
-                         session_start();
-                         $_SESSION['login'] = 'csa2025';
-                         $_SESSION['user_email'] = $user_exist['email'];
-                         $_SESSION['user_id'] = $user_exist['user_id'];
-
-                         header("Location:section_b_participation_category.php");
-                 }
-                 else
-                 {
-                        $status = "fail";
-                        $error_msg = "An error occurred registering the email";
-                 }
+                        $status = "success";
+                        $error_msg = "The record has been successfully saved";           
             }
             else
             {
-                 session_start();
-                 $_SESSION['login'] = 'csa2025';
-                 $_SESSION['user_email'] = $user_exist['email'];
-                 $_SESSION['user_id'] = $user_exist['user_id'];
-                 header("Location:section_b_participation_category.php");
+                         $status = "fail";
+                        $error_msg = "An error occurred saving the record";
+
             }
+
+             
+             
         }
+
   }
 
 
@@ -75,20 +81,36 @@
 <main class="bg-gray-100 min-h-screen ">
     <?php
         require_once('menu.inc.php');
+
+        $working_hour = new WorkingHour($db);
+        $working_hour->user_id = $_SESSION['user_id'];
+        
+        $working_hour = $working_hour->exists();
+        $working_hour = $working_hour->fetch(PDO::FETCH_ASSOC);
     ?>
 
 
     <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
         <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center border-b">
             <div>
-                <div class="text-xl md:text-xl text-green-800 py-0 font-semibold border-gray-300">
+                <div class="text-xl md:text-xl text-green-800 py-1 font-semibold border-gray-300">
                     Job Application Form
                 </div>
                 <div class="text-md md:text-md text-black-500 font-semibold border-gray-300">
                     WORKING HOURS
                 </div>               
             </div>
-            <div>Section 5 of 6</div>
+            <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
+                <div>Section 6 of 13</div>
+                <div>
+                    <a href='section_e_driving_license.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
+                                                                    text-sm border border-blue-500 hover:bg-blue-400 
+                                                                    hover:border-blue-400
+                                                                    hover:text-white'>Previous</a>
+                    <a href='section_g_other_information.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm 
+                                                                    border border-blue-500 hover:border-blue-400 hover:bg-blue-400'>Next</a>
+                </div>
+            </div>
         </div>
 
         
@@ -98,13 +120,9 @@
         <form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST" class="md:px-10 py-5">
 
 
-            <?php
-                    if ($status == 'fail')
-                    {
-                         echo "<div class='my-4 py-6 px-4 border border-red-200 bg-red-50 rounded-md'>{$error_msg}</div>";
-                    }
-                   
-            ?>
+             <?php
+                    include_once('alert_message.inc.php');
+             ?>
             
             
             <!-- Title of post applied for //-->           
@@ -127,8 +145,10 @@
 
                 <div class="py-3 md:w-2/5">
                     
-                         <input type="text" name="grade" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                         <input type="text" name="work_hours" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php if ($working_hour){ echo $working_hour['work_hours']; } ?>"
+                                                                                />
                                                                          
                 </div>
                 
@@ -150,11 +170,15 @@
                 <div class="py-3 md:w-2/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
+                                <input type="radio" name="impromptu_work" value="1" required  class="border py-3 rounded-md px-3 text-lg
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"
+                                                                         <?php if ($working_hour && $working_hour['impromptu_work'] == "1"){ echo "checked"; } ?>
+                                                                         /> <span class="text-md border-0 px-2"> Yes </span>
 
-                                <input type="radio" name="need_work_permit" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
+                                <input type="radio" name="impromptu_work" value="0" required  class="border py-3 rounded-md px-3 text-lg
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  
+                                                                         <?php if ($working_hour && $working_hour['impromptu_work'] == "0"){ echo "checked"; } ?>
+                                                                         /> <span class="text-md border-0 px-2"> No </span>
 
                             
                     </div>
@@ -177,8 +201,10 @@
                 <div class="py-3 md:w-2/5">
                     
                     <div class="flex py-1 border-0">
-                                 <input type="text" name="grade" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                 <input type="text" name="start_date" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php if($working_hour){echo $working_hour['start_date']; } ?>"
+                                                                                />
 
                             
                     </div>
@@ -202,8 +228,10 @@
                 <div class="py-3 md:w-2/5">
                     
                     <div class="flex py-1 border-0">
-                                <input type="text" name="grade" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                <input type="text" name="employer_notice" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php if($working_hour){echo $working_hour['employer_notice']; } ?>"
+                                                                                />
 
                             
                     </div>
@@ -222,8 +250,8 @@
                 <div class="py-3 md:w-full">
                     <label class='text-gray-800 font-medium text-sm'>Please give details of any other work you will continue to undertake if you are offered the job position: <sup class='text-red-600'></sup></label>
                     <div class="py-1">
-                            <textarea name="duties_description" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                            <textarea name="other_work" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php if($working_hour){echo $working_hour['other_work']; } ?></textarea>
                     </div>
                 </div>
 
@@ -237,8 +265,8 @@
                 <div class="py-3 md:w-full">
                     <label class='text-gray-800 font-medium text-sm'>Please provide details of any future holidays or time off that you have already committed to. <sup class='text-red-600'></sup></label>
                     <div class="py-1">
-                            <textarea name="duties_description" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                            <textarea name="future_holiday" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php if($working_hour){echo $working_hour['future_holiday']; } ?></textarea>
                     </div>
                 </div>
 

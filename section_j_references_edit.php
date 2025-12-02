@@ -2,6 +2,14 @@
 
   include_once("page_config.inc.php");
 
+  if (!isset($_GET['u']) && $_GET['u'] != '')
+  {
+        if ($_GET['u'] != $_SESSION['user_id'])
+        {
+            header("location: index.php");
+        }
+  }
+
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
@@ -14,6 +22,7 @@
         $email = htmlspecialchars(strip_tags((string) $_POST['email']));
         $fax = htmlspecialchars(strip_tags((string) $_POST['fax']));
         $reference_interview = htmlspecialchars(strip_tags((string) $_POST['reference']));
+
                
         
 
@@ -22,7 +31,12 @@
         $reference = new InterviewReference($db);
 
         
+        $reference->id = $_GET['q'];
         $reference->user_id = $_SESSION['user_id'];
+
+
+        echo $reference->id;
+        
 
         $reference->title = $title;
         $reference->fullname = $fullname;
@@ -36,18 +50,18 @@
               
 
         
-        $create =  $reference->create($db);   
+        $update =  $reference->update($db);   
         
-        if ($create['status']=="success")
+        if ($update['status']=="success")
             {
 
                     $status = "success";
-                    $error_msg = "The record has been successfully saved";           
+                    $error_msg = "The record has been successfully updated";           
         }
         else
         {
                     $status = "fail";
-                    $error_msg = "An error occurred saving the record";
+                    $error_msg = "An error occurred updating the record";
 
         }            
         
@@ -73,7 +87,9 @@
         
         $reference = new InterviewReference($db);
         $reference->user_id = $_SESSION['user_id'];
-        $reference_records = $reference->exists();
+        $reference->id = $_GET['q'];
+        $reference_records = $reference->readOne();
+        $reference_records = $reference_records->fetch(PDO::FETCH_ASSOC);
     ?>
 
 
@@ -94,15 +110,8 @@
                                                                     text-sm border border-blue-500 hover:bg-blue-400 
                                                                     hover:border-blue-400
                                                                     hover:text-white'>Previous</a>
-                    <?php
-                        if ($reference_records->rowCount() > 0)
-                        {
-                    ?>
                     <a href='section_k_consent.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm 
                                                                     border border-blue-500 hover:border-blue-400 hover:bg-blue-400'>Next</a>
-                    <?php 
-                        }
-                    ?>
                 </div>
             </div>
         </div>
@@ -147,7 +156,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="title" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['title']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -173,7 +184,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="fullname" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['fullname']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -199,7 +212,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="job_title" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full" 
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['job_title']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -225,7 +240,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="organisation" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full" 
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['organisation']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -243,7 +260,7 @@
                     <label class='text-gray-800 font-medium text-sm'>Address <sup class='text-red-600'></sup></label>
                     <div class="py-1">
                             <textarea name="address" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php if ( $reference_records){ echo $reference_records['address']; } ?></textarea>
                     </div>
                 </div>
 
@@ -266,7 +283,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="phone" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['phone']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -292,7 +311,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="email" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['email']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -317,7 +338,9 @@
                     
                     <div class="flex py-1 border-0">
                                 <input type="text" name="fax"  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full"  /> 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-full" 
+                                                                         value="<?php if ( $reference_records){ echo $reference_records['fax']; } ?>"
+                                                                         /> 
 
                                 
                             
@@ -343,10 +366,14 @@
                     
                     <div class="flex py-1 border-0">
                                  <input type="radio" name="reference" value="1" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"  /> <span class="text-md border-0 px-2"> Yes </span>
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6"
+                                                                         <?php if ( $reference_records && $reference_records['ref_prior_interview']=="1"){ echo "checked"; } ?>
+                                                                         /> <span class="text-md border-0 px-2"> Yes </span>
 
                                 <input type="radio" name="reference" value="0" required  class="border py-3 rounded-md px-3 text-lg
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3"  /> <span class="text-md border-0 px-2"> No </span>
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 w-6 h-6 ml-3" 
+                                                                         <?php if ( $reference_records && $reference_records['ref_prior_interview']=="0"){ echo "checked"; } ?>
+                                                                         /> <span class="text-md border-0 px-2"> No </span>
 
                                 
                             
@@ -368,7 +395,7 @@
                         <button type="submit" class="border py-4 rounded-md bg-gray-600 text-white 
                                                      font-semibold hover:bg-green-600 cursor-pointer" 
                                 style="width:100%;" >
-                                Submit
+                                Update
                         </button>
                 </div>
             </div>
@@ -382,12 +409,17 @@
 
 
     <?php 
+            $reference = new InterviewReference($db);
+            $reference->user_id = $_SESSION['user_id'];
+            $reference_records = $reference->exists();
+
+
             if ($reference_records->rowCount() > 0)
             {
     ?>
     <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
              <div class="py-1 p-6 mb-16" >
-                    <div class='text-lg font-semibold py-3'>Submitted References (<?php echo $reference_records->rowCount(); ?>) </div>
+                    <div class='text-lg font-semibold py-3 border-b'>Submitted References (<?php echo $reference_records->rowCount(); ?>) </div>
                 
                     <?php   
                         $counter = 0;

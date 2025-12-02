@@ -1,66 +1,63 @@
 <?php
-  session_start();
-  session_destroy();
 
-  $status = "";
-  $error_msg = "";
-
+  include_once("page_config.inc.php");
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $confirm_email = htmlspecialchars(strip_tags($_POST['confirm_email']));
+        
+        $subscribe = htmlspecialchars(strip_tags((string) $_POST['subscribe']));
+          
 
-       
+        //echo $other_activities;        
+        
+        $dbs = new DBSService($db);
 
-        if ($email != $confirm_email)
+        
+        $dbs->user_id = $_SESSION['user_id'];
+
+        $dbs->subscribe = $subscribe;
+        
+              
+
+        $record_exist = $dbs->exists();
+        
+        if ($record_exist->rowCount() > 0)
         {
-            $status = "fail";
-            $error_msg = "The email addresses do not match.";
+                $update =  $dbs->update($db);
+
+                if ($update['status']=="success")
+                {
+                        $status = "success";
+                        $error_msg = "The record has been successfully updated";           
+                }
+                else
+                {
+                        $status = "fail";
+                        $error_msg = "An error occurred updating the record";
+
+                }
+
+            header("location: application_completed.php");
         }
         else
         {
-            include_once('config/database.php');
-            include_once('classes/User.php');
+             $create =  $dbs->create($db);   
+             
+            if ($create['status']=="success")
+                {
 
-            $database = new Database();
-            $db = $database->getConnection();
-
-            $user = new User($db);
-            $user->email = $email;
-            $user_exist = $user->user_exist();
-
-            //var_dump($user_exist);
-            //exit;
-
-            if ($user_exist == 0)
-            {
-                 $user_create = $user->create();
-                 if ($user_create['status']=="success")
-                 {
-
-                         $user_exist = $user->user_exist();
-                         session_start();
-                         $_SESSION['login'] = 'csa2025';
-                         $_SESSION['user_email'] = $user_exist['email'];
-                         $_SESSION['user_id'] = $user_exist['user_id'];
-
-                         header("Location:section_b_participation_category.php");
-                 }
-                 else
-                 {
-                        $status = "fail";
-                        $error_msg = "An error occurred registering the email";
-                 }
+                        $status = "success";
+                        $error_msg = "The record has been successfully saved";           
             }
             else
             {
-                 session_start();
-                 $_SESSION['login'] = 'csa2025';
-                 $_SESSION['user_email'] = $user_exist['email'];
-                 $_SESSION['user_id'] = $user_exist['user_id'];
-                 header("Location:section_b_participation_category.php");
+                        $status = "fail";
+                        $error_msg = "An error occurred saving the record";
+
             }
+
+             
+             header("location: application_completed.php");
         }
   }
 
@@ -81,14 +78,24 @@
     <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
         <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center border-b">
             <div>
-                <div class="text-xl md:text-xl text-green-800 py-0 font-semibold border-gray-300">
+                <div class="text-xl md:text-xl text-green-800 py-1 font-semibold border-gray-300">
                     Job Application Form
                 </div>
                 <div class="text-md md:text-md text-black-500 font-semibold border-gray-300">
                     3.0 DBS Consent Form
                 </div>               
             </div>
-            <div>Section 5 of 6</div>
+            <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
+                <div>Section 13 of 13</div>
+                <div>
+                    <a href='section_l_declaration.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
+                                                                    text-sm border border-blue-500 hover:bg-blue-400 
+                                                                    hover:border-blue-400
+                                                                    hover:text-white'>Previous</a>
+                    
+
+                </div>
+            </div>
         </div>
 
         
@@ -125,7 +132,7 @@
                     <label class='text-xl text-gray-800 font-semibold'>Yes</label>
                     
                     <div class="py-1">
-                            <input name="signature" type='radio' required class="border py-3 rounded-md px-3 text-lg  
+                            <input name="subscribe" type='radio' value='new_yes' required class="border py-3 rounded-md px-3 text-lg  
                                                                             focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 
                                                                             w-6 h-6" />&nbsp;&nbsp;  I declare that I am already signed up the DBS Update Service, I also understand that
 in the event of signing the below, I am consenting that my employer, Moor and Coast Care, can process on-
@@ -146,7 +153,7 @@ going status checks as and when needed through the update service.
                 <div class="py-3 md:w-full">
                     <label class='text-xl text-gray-800 font-semibold font-semibold'>No</label>
                     <div class="py-1">
-                            <input name="signature" type='radio' required class="border py-3 rounded-md px-3 text-lg 
+                            <input name="subscribe" type='radio' value="new_no" required class="border py-3 rounded-md px-3 text-lg 
                                                                             focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 
                                                                             w-6 h-6" />  &nbsp;&nbsp;I declare that I agree to sign up to the DBS Update Service for the fee of £13.00, the
 cost of which will be met by myself. This money will be reimbursed to me by the company after successful
@@ -171,6 +178,9 @@ Moor and Coast Care, can process on-going status checks as and when needed throu
                     
                     
                     <div class="py-1">
+                        <input name="subscribe" type='radio' value="old_yes" required class="border py-3 rounded-md px-3 text-lg 
+                                                                            focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 
+                                                                            w-6 h-6" />  &nbsp;&nbsp;
                         I declare that I agree to sign up to the DBS Update Service for the fee of £13.00, the
 cost of which will be met by myself. This money will be reimbursed to me by the company on completion of an
 expenses claim form. <br/><br/>
@@ -194,7 +204,7 @@ Moor and Coast Care, can process on-going status checks as and when needed throu
                         <button type="submit" class="border py-4 rounded-md bg-gray-600 text-white 
                                                      font-semibold hover:bg-green-600 cursor-pointer" 
                                 style="width:100%;" >
-                                Submit
+                                FINAL SUBMISSION
                         </button>
                 </div>
             </div>

@@ -1,66 +1,66 @@
 <?php
-  session_start();
-  session_destroy();
+    
 
-  $status = "";
-  $error_msg = "";
+    include_once("page_config.inc.php");
 
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $confirm_email = htmlspecialchars(strip_tags($_POST['confirm_email']));
-
+        $name = htmlspecialchars(strip_tags((string) $_POST['name']));
+        $date = htmlspecialchars(strip_tags((string) $_POST['date']));
        
+        
 
-        if ($email != $confirm_email)
+        //echo $other_activities;        
+        
+        $declaration = new Declaration($db);
+
+        
+        $declaration->user_id = $_SESSION['user_id'];
+
+        $declaration->name = $name;
+        $declaration->date = $date;
+              
+
+        $record_exist = $declaration->exists();
+        
+        if ($record_exist->rowCount() > 0)
         {
-            $status = "fail";
-            $error_msg = "The email addresses do not match.";
+                $update =  $declaration->update($db);
+
+                if ($update['status']=="success")
+                {
+                        $status = "success";
+                        $error_msg = "The record has been successfully updated";           
+                }
+                else
+                {
+                        $status = "fail";
+                        $error_msg = "An error occurred updating the record";
+
+                }
+
+
         }
         else
         {
-            include_once('config/database.php');
-            include_once('classes/User.php');
+             $create =  $declaration->create($db);   
+             
+            if ($create['status']=="success")
+                {
 
-            $database = new Database();
-            $db = $database->getConnection();
-
-            $user = new User($db);
-            $user->email = $email;
-            $user_exist = $user->user_exist();
-
-            //var_dump($user_exist);
-            //exit;
-
-            if ($user_exist == 0)
-            {
-                 $user_create = $user->create();
-                 if ($user_create['status']=="success")
-                 {
-
-                         $user_exist = $user->user_exist();
-                         session_start();
-                         $_SESSION['login'] = 'csa2025';
-                         $_SESSION['user_email'] = $user_exist['email'];
-                         $_SESSION['user_id'] = $user_exist['user_id'];
-
-                         header("Location:section_b_participation_category.php");
-                 }
-                 else
-                 {
-                        $status = "fail";
-                        $error_msg = "An error occurred registering the email";
-                 }
+                        $status = "success";
+                        $error_msg = "The record has been successfully saved";           
             }
             else
             {
-                 session_start();
-                 $_SESSION['login'] = 'csa2025';
-                 $_SESSION['user_email'] = $user_exist['email'];
-                 $_SESSION['user_id'] = $user_exist['user_id'];
-                 header("Location:section_b_participation_category.php");
+                        $status = "fail";
+                        $error_msg = "An error occurred saving the record";
+
             }
+
+             
+             
         }
   }
 
@@ -75,20 +75,43 @@
 <main class="bg-gray-100 min-h-screen ">
     <?php
         require_once('menu.inc.php');
+
+        $declaration = new Declaration($db);
+        $declaration->user_id = $_SESSION['user_id'];
+        
+        $declaration = $declaration->exists();
+        $declaration = $declaration->fetch(PDO::FETCH_ASSOC);
     ?>
 
 
-    <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
+    <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white mb-8">
         <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center border-b">
             <div>
-                <div class="text-xl md:text-xl text-green-800 py-0 font-semibold border-gray-300">
+                <div class="text-xl md:text-xl text-green-800 py-1 font-semibold border-gray-300">
                     Job Application Form
                 </div>
                 <div class="text-md md:text-md text-black-500 font-semibold border-gray-300">
                     DECLARATION
                 </div>               
             </div>
-            <div>Section 5 of 6</div>
+            <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
+                <div>Section 12 of 13</div>
+                <div>
+                    <a href='section_k_consent.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
+                                                                    text-sm border border-blue-500 hover:bg-blue-400 
+                                                                    hover:border-blue-400
+                                                                    hover:text-white'>Previous</a>
+                    <?php
+                        if ($declaration){
+                    ?>                     
+                    <a href='section_m_consent_form.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm 
+                                                                    border border-blue-500 hover:border-blue-400 hover:bg-blue-400'>Next</a>
+                    <?php  
+                        }
+                    ?>
+
+                </div>
+            </div>
         </div>
 
         
@@ -99,11 +122,7 @@
 
 
             <?php
-                    if ($status == 'fail')
-                    {
-                         echo "<div class='my-4 py-6 px-4 border border-red-200 bg-red-50 rounded-md'>{$error_msg}</div>";
-                    }
-                   
+                    include_once('alert_message.inc.php');
             ?>
             
             
@@ -124,29 +143,25 @@
 
              <!-- Professional Qualifications currently held how obtained, grade and date  //-->
             <div class="flex flex-col md:flex-row w-full gap-x-4">
-                <!-- former surnames //-->
-                <div class="py-3 md:w-2/5">
-                    <label class='text-gray-800 font-medium text-sm'>Signature: <sup class='text-red-600'>*</sup></label>
-                    <div class="py-1">
-                            <input name="signature" type='file' required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                            focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 
-                                                                            " style="width:100%;" ></textarea>
-                    </div>
-                </div>
+                <!-- former surnames //-->                
 
                 <div class="py-3 md:w-3/5">
                     <label class='text-gray-800 font-medium text-sm'>Name <sup class='text-red-600'>*</sup></label>
                     <div class='py-1'>
-                            <input type="text" name="grade" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                            <input type="text" name="name" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php if ($declaration){ echo $declaration['name']; } ?>"
+                                                                                />
                     </div>
                 </div>
 
-                 <div class="py-3 md:w-1/5">
+                 <div class="py-3 md:w-2/5">
                     <label class='text-gray-800 font-medium text-sm'>Date <sup class='text-red-600'>*</sup></label>
                     <div class='py-1'>
                             <input type="text" name="date" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;" />
+                                                                                focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400" style="width:100%;"
+                                                                                value="<?php if ($declaration){ echo $declaration['date']; } ?>"
+                                                                                />
                     </div>
                 </div>
             </div>

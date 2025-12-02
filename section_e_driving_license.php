@@ -1,23 +1,5 @@
 <?php
-  session_start();
-  
-
-  include_once('config/database.php');
-  include_once('classes/User.php');
-  include_once('classes/Education.php');
-  include_once('classes/Profession.php');
-  include_once('classes/TrainingCourse.php');
-  include_once('classes/PresentPost.php');
-  include_once('classes/PreviousEmployment.php');
-  include_once('classes/DrivingLicense.php');
-
-  $status = "";
-  $error_msg = "";
-
-  $database = new Database();
-  $db = $database->getConnection();
-
-
+  include_once('page_config.inc.php');
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
@@ -27,7 +9,7 @@
         $insurance_policy = htmlspecialchars(strip_tags($_POST['insurance_policy']));
         $penaly_points = htmlspecialchars(strip_tags($_POST['penalty_points']));
         $driving_penalty = htmlspecialchars(strip_tags($_POST['driving_penalty']));
-        $duties = htmlspecialchars(strip_tags($_POST['duties']));
+        $details = htmlspecialchars(strip_tags($_POST['details']));
 
 
         $driving_license = new DrivingLicense($db);
@@ -41,14 +23,27 @@
         $driving_license->insurance_policy = $insurance_policy;
         $driving_license->penalty_points = $penaly_points;
         $driving_license->driving_penalty = $driving_penalty;
-        $driving_license->duties = $duties;
+        $driving_license->details = $details;
 
 
         $record_exist = $driving_license->exists();
         
         if ($record_exist->rowCount() > 0)
         {
-               $created = $driving_license->create($db);
+               $update = $driving_license->update($db);
+
+               if ($update['status']=="success")
+                {
+
+                        $status = "success";
+                        $error_msg = "The record has been successfully updated";           
+                }
+                else
+                {
+                            $status = "fail";
+                            $error_msg = "An error occurred updating the record";
+
+                }
 
         }
         else
@@ -101,15 +96,27 @@
     <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
         <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center border-b">
             <div>
-                <div class="text-xl md:text-xl text-green-800 py-0 font-semibold border-gray-300">
+                <div class="text-xl md:text-xl text-green-800 py-1 font-semibold border-gray-300">
                     Job Application Form
                 </div>
                 <div class="text-md md:text-md text-black-500 font-semibold border-gray-300">
                     DRIVING LICENSE
                 </div>               
             </div>
-            <div>Section 5 of 6</div>
+            <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
+                <div>Section 5 of 13</div>
+                <div>
+                    <a href='section_d_previous_employment.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
+                                                                    text-sm border border-blue-500 hover:bg-blue-400 
+                                                                    hover:border-blue-400
+                                                                    hover:text-white'>Previous</a>
+                    <a href='section_f_working_hours.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm 
+                                                                    border border-blue-500 hover:border-blue-400 hover:bg-blue-400'>Next</a>
+                </div>
+            </div>
         </div>
+
+        
 
         
 
@@ -295,10 +302,10 @@
             <!-- Description of duties //-->
             <div class="flex flex-col md:flex-row w-full gap-x-4 mt-5">
                 <div class="py-3 md:w-full">
-                    <label class='text-gray-800 font-medium text-sm'>Description of duties: <sup class='text-red-600'></sup></label>
+                    <label class='text-gray-800 font-medium text-sm'>If you have answered yes to been disqualified from driving or had insurance refused: <sup class='text-red-600'></sup></label>
                     <div class="py-1">
-                            <textarea name="duties" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php echo $driving_license['duties']; ?></textarea>
+                            <textarea name="details" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php echo $driving_license['details']; ?></textarea>
                     </div>
                 </div>
 

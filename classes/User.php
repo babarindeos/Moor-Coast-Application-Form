@@ -50,6 +50,32 @@ class User
     }
 
 
+    public function application_complete()
+    {
+        try
+        {
+            $query = "Select * from dbs_service where user_id=:user_id";
+
+            $stmt = $this->conn->prepare($query);
+
+            $this->user_id = htmlspecialchars(strip_tags($this->user_id));
+
+            $stmt->bindParam(":user_id", $this->user_id);
+            
+
+            $stmt->execute();
+
+            $exist = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        }
+        catch(Exception $e)
+        {
+            $exist = null;
+        }
+
+        return $exist;
+    }
+
 
     // create User
     public function create()

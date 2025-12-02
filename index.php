@@ -103,8 +103,8 @@
 
         <div class="flex flex-col md:flex-row mx-auto border w-full items-center justify-center py-5 border-0">
                 <div class="border-0 md:space-x-2 space-y-2 md:space-y-0">
-                    <a href="new_application_start.php" class="border rounded-md border px-6 py-3 text-white bg-blue-500">New Application</a> 
-                    <a href="#" class="border rounded-md border px-6 py-3 text-white bg-blue-500">Resume Application</a>
+                    <a href="new_application_start.php" class="border rounded-md border px-5 md:px-6 py-3 text-white bg-blue-500 text-sm md:text-md hover:bg-blue-400">New Application</a> 
+                    <a href="resume_application.php" class="border rounded-md border px-5 md:px-6 py-3 text-white bg-blue-500 text-sm md:text-md hover:bg-blue-400">Resume Application</a>
                 </div>
 
         </div>

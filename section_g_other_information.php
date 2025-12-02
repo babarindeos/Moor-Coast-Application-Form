@@ -1,67 +1,63 @@
 <?php
-  session_start();
-  session_destroy();
-
-  $status = "";
-  $error_msg = "";
+  include_once('page_config.inc.php');
 
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $confirm_email = htmlspecialchars(strip_tags($_POST['confirm_email']));
+        $other_activities = htmlspecialchars(strip_tags((string) $_POST['other_activities']));
 
-       
+        //echo $other_activities;        
+        
+        $other_information = new OtherInformation($db);
 
-        if ($email != $confirm_email)
+        
+        $other_information->user_id = $_SESSION['user_id'];
+
+        $other_information->other_activities = $other_activities;
+        
+
+        $record_exist = $other_information->exists();
+        
+        if ($record_exist->rowCount() > 0)
         {
-            $status = "fail";
-            $error_msg = "The email addresses do not match.";
+               $update = $other_information->update($db);
+
+                if ($update['status']=="success")
+                {
+
+                        $status = "success";
+                        $error_msg = "The record has been successfully updated";           
+                }
+                else
+                {
+                        $status = "fail";
+                        $error_msg = "An error occurred updating the record";
+
+                }
+
+
         }
         else
         {
-            include_once('config/database.php');
-            include_once('classes/User.php');
+             $create =  $other_information->create($db);   
+             
+            if ($create['status']=="success")
+                {
 
-            $database = new Database();
-            $db = $database->getConnection();
-
-            $user = new User($db);
-            $user->email = $email;
-            $user_exist = $user->user_exist();
-
-            //var_dump($user_exist);
-            //exit;
-
-            if ($user_exist == 0)
-            {
-                 $user_create = $user->create();
-                 if ($user_create['status']=="success")
-                 {
-
-                         $user_exist = $user->user_exist();
-                         session_start();
-                         $_SESSION['login'] = 'csa2025';
-                         $_SESSION['user_email'] = $user_exist['email'];
-                         $_SESSION['user_id'] = $user_exist['user_id'];
-
-                         header("Location:section_b_participation_category.php");
-                 }
-                 else
-                 {
-                        $status = "fail";
-                        $error_msg = "An error occurred registering the email";
-                 }
+                        $status = "success";
+                        $error_msg = "The record has been successfully saved";           
             }
             else
             {
-                 session_start();
-                 $_SESSION['login'] = 'csa2025';
-                 $_SESSION['user_email'] = $user_exist['email'];
-                 $_SESSION['user_id'] = $user_exist['user_id'];
-                 header("Location:section_b_participation_category.php");
+                        $status = "fail";
+                        $error_msg = "An error occurred saving the record";
+
             }
+
+             
+             
         }
+        
   }
 
 
@@ -75,20 +71,36 @@
 <main class="bg-gray-100 min-h-screen ">
     <?php
         require_once('menu.inc.php');
+
+        $other_information = new OtherInformation($db);
+        $other_information->user_id = $_SESSION['user_id'];
+        
+        $other_information = $other_information->exists();
+        $other_information = $other_information->fetch(PDO::FETCH_ASSOC);
     ?>
 
 
     <section class="mx-5 md:mx-80 border-0 py-8 px-5 bg-white">
         <div class="flex flex-col md:flex-row md:justify-between border-0 md:items-center border-b">
             <div>
-                <div class="text-xl md:text-xl text-green-800 py-0 font-semibold border-gray-300">
+                <div class="text-xl md:text-xl text-green-800 py-1 font-semibold border-gray-300">
                     Job Application Form
                 </div>
                 <div class="text-md md:text-md text-black-500 font-semibold border-gray-300">
                     OTHER INFORMATION
                 </div>               
             </div>
-            <div>Section 5 of 6</div>
+            <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
+                <div>Section 7 of 13</div>
+                <div>
+                    <a href='section_f_working_hours.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
+                                                                    text-sm border border-blue-500 hover:bg-blue-400 
+                                                                    hover:border-blue-400
+                                                                    hover:text-white'>Previous</a>
+                    <a href='section_h_disability_discrimination_act.php' class='py-1 rounded-r px-5 bg-blue-500 text-white text-sm 
+                                                                    border border-blue-500 hover:border-blue-400 hover:bg-blue-400'>Next</a>
+                </div>
+            </div>
         </div>
 
         
@@ -98,13 +110,9 @@
         <form action="<?php $_SERVER['PHP_SELF']; ?>" method="POST" class="md:px-10 py-5">
 
 
-            <?php
-                    if ($status == 'fail')
-                    {
-                         echo "<div class='my-4 py-6 px-4 border border-red-200 bg-red-50 rounded-md'>{$error_msg}</div>";
-                    }
-                   
-            ?>
+             <?php
+                    include_once('alert_message.inc.php');
+             ?>
             
             
             
@@ -115,8 +123,8 @@
                 <div class="py-3 md:w-full">
                     <label class='text-gray-800 font-medium text-sm'>What activities outside work interest you? (State any positions held you consider relevant.): <sup class='text-red-600'></sup></label>
                     <div class="py-1">
-                            <textarea name="duties_description" required class="border py-3 rounded-md px-3 text-lg shadow-md 
-                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ></textarea>
+                            <textarea name="other_activities" required class="border py-3 rounded-md px-3 text-lg shadow-md 
+                                                                         focus:outline-none focus:ring-1 focus:ring-sky-300/50 focus:border-sky-400 h-24 md:h-30" style="width:100%;" ><?php if ($other_information){ echo $other_information['other_activities']; } ?></textarea>
                     </div>
                 </div>
 

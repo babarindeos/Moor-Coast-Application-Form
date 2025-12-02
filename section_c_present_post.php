@@ -1,25 +1,5 @@
 <?php
-  session_start();
-  if (!isset($_SESSION['login']) || $_SESSION['login'] != 'moor_coast_app')
-  {
-     header("Location: index.php");
-  }
-
-  $status = "";
-  $error_msg = "";
-
-  
-  include_once('config/database.php');
-  include_once('classes/User.php');
-  include_once('classes/Education.php');
-  include_once('classes/Profession.php');
-  include_once('classes/TrainingCourse.php');
-  include_once('classes/PresentPost.php');
-  
-
-
-   $database = new Database();
-   $db = $database->getConnection();
+  include_once('page_config.inc.php');
 
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
@@ -129,7 +109,7 @@
                 </div>
             </div>
             <div class="flex flex-col md:flex-col gap-1 py-3 md:py-0">
-                <div>Section 3 of 6</div>
+                <div>Section 3 of 13</div>
                 <div>
                     <a href='section_b_educational_professional_qualifications.php' class='py-1 rounded-l px-5 bg-white text-blue-600 
                                                                     text-sm border border-blue-500 hover:bg-blue-400 

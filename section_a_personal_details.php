@@ -1,21 +1,5 @@
 <?php
-  session_start();
-  if (!isset($_SESSION['login']) || $_SESSION['login'] != 'moor_coast_app')
-  {
-     header("Location: index.php");
-  }
-  
-
-  $status = "";
-  $error_msg = "";
-
-  include_once('config/database.php');
-  include_once('classes/User.php');
-  include_once('classes/PersonalDetail.php');
-
-
-   $database = new Database();
-   $db = $database->getConnection();
+  include_once('page_config.inc.php');
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST')
   {
@@ -111,7 +95,7 @@
             </div>
             
             <div class="flex flex-col md:flex-row gap-2">
-                <div>Section 1 of 6</div> 
+                <div>Section 1 of 13</div> 
                 <?php 
                     if ($personal_details){
                 ?>

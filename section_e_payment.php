@@ -79,7 +79,7 @@
                 Payment
             </div>
             <div class="flex flex-row justify-between border-0 gap-x-5">
-                    <div>Section 5 of 6</div>
+                    <div>Section 5 of 13</div>
                     <div><a class='underline' href='section_d_paper_information.php'>Previous</a> <?php if ($get_payment){ echo "|  "."<a class='underline' href='section_f_preview.php'>Next</a>"; } ?>  </div> 
                     
             </div>
